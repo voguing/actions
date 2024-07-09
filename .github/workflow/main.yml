@@ -1,0 +1,47 @@
+name: "Docker Build Action"
+description: "A custom reusable action to build docker image and push to aliyun registry."
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_call:
+    inputs:
+      name:
+        description: "Docker image name"
+        required: true
+    secret:
+      ALIYUN_REGISTRY:
+        description: "Aliyun registry"
+        required: true
+      ALIYUN_NAME_SPACE:
+        description: "Aliyun name space"
+        required: true
+      ALIYUN_REGISTRY_USER:
+        description: "Aliyun registry user"
+        required: true
+      ALIYUN_REGISTRY_PASSWORD:
+        description: "Aliyun registry password"
+        required: true
+    
+env:
+  ALIYUN_REGISTRY: '${{ secrets.ALIYUN_REGISTRY }}'
+  ALIYUN_NAME_SPACE: '${{ secrets.ALIYUN_NAME_SPACE }}'
+  ALIYUN_REGISTRY_USER: '${{ secrets.ALIYUN_REGISTRY_USER }}'
+  ALIYUN_REGISTRY_PASSWORD: '${{ secrets.ALIYUN_REGISTRY_PASSWORD }}'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 登录至阿里云容器镜像服务
+        run: docker login -u $ALIYUN_REGISTRY_USER -p $ALIYUN_REGISTRY_PASSWORD $ALIYUN_REGISTRY
+
+      - name: 构建容器镜像
+        run: |
+          image_name=$ALIYUN_REGISTRY/$ALIYUN_NAME_SPACE/${{ inputs.name }}:latest
+          docker build . --file Dockerfile --tag $image_name && docker push $image_name
