@@ -1,5 +1,4 @@
 name: "Docker Build Action"
-description: "A custom reusable action to build docker image and push to aliyun registry."
 
 on:
   push:
@@ -11,7 +10,8 @@ on:
       name:
         description: "Docker image name"
         required: true
-    secret:
+        type: string
+    secrets:
       ALIYUN_REGISTRY:
         description: "Aliyun registry"
         required: true
