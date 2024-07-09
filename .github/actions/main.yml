@@ -1,0 +1,40 @@
+name: "Docker Build Action"
+description: "A custom reusable action to build docker image and push to aliyun registry."
+
+inputs:
+  name:
+    description: "Docker image name"
+    required: true
+  aliyun-registry:
+    description: "Aliyun registry"
+    required: true
+  aliyun-name-space:
+    description: "Aliyun name space"
+    required: true
+  aliyun-registry-user:
+    description: "Aliyun registry user"
+    required: true
+  aliyun-registry-password:
+    description: "Aliyun registry password"
+    required: true
+    
+env:
+  ALIYUN_REGISTRY: '${{ inputs.aliyun-registry }}'
+  ALIYUN_NAME_SPACE: '${{ inputs.aliyun-name-space }}'
+  ALIYUN_REGISTRY_USER: '${{ inputs.aliyun-registry-user }}'
+  ALIYUN_REGISTRY_PASSWORD: '${{ inputs.aliyun-registry-password }}'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 登录至阿里云容器镜像服务
+        run: docker login -u $ALIYUN_REGISTRY_USER -p $ALIYUN_REGISTRY_PASSWORD $ALIYUN_REGISTRY
+
+      - name: 构建容器镜像
+        run: |
+          image_name=$ALIYUN_REGISTRY/$ALIYUN_NAME_SPACE/voguexus:latest
+          docker build . --file Dockerfile --tag $image_name && docker push $image_name
